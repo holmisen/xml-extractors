@@ -72,8 +72,14 @@ data Err = ErrExpect
              , atAttrib :: XML.Element  -- ^ element with missing attribute
              , location :: Path
              } -- ^ An expected attribute is missing
-         | ErrEnd XML.Content Path
-         | ErrNull String Path
+         | ErrEnd 
+             { found    :: XML.Content
+             , location :: Path
+             } -- ^ Expected end of contents
+         | ErrNull
+             { expected :: String
+             , location :: Path
+             } -- ^ Unexpected end of contents
          | ErrMsg String
   deriving Show
 
