@@ -1,20 +1,31 @@
--- | Preliminary draft
+-- | PRELIMINARY DRAFT
 --
 -- A library to make extracting information from parsed XML easier.
 --
--- The 'Control.Applicative' module contains some useful combinators.
+-- The 'Control.Applicative' module contains some useful combinators
+-- like 'optional', 'many' and '<|>'.
 --
 -- Example:
 --
 -- @
---    foo = 'element' "book" $ do
---            i <- 'attrib' "id"
---            s <- 'optional' ('attrib' "isbn")
---            'children' $ do
---              t <- 'element' "title" $ 'contents' $ 'text'
---              a <- 'element' "author" $ 'contents' $ 'text'
---              return $ Book { bookId = i, author = a, title = t, isbn = s }
+--    data Book = Book { bookdId, author, title, isbn :: String }
 -- @
+--
+-- @
+--    book = 'element' "book" $ do
+--             i <- 'attrib' "id"
+--             s <- 'optional' ('attrib' "isbn")
+--             'children' $ do
+--               t <- 'element' "title" $ 'contents' $ 'text'
+--               a <- 'element' "author" $ 'contents' $ 'text'
+--               return $ Book { bookId = i, author = a, title = t, isbn = s }
+-- @
+--
+-- @
+--    bookParse = 'parseElem' book
+-- @
+--
+-- __TODO__: Newtype wrappers
 --
 
 module Text.XML.Light.Wrapper
@@ -24,6 +35,7 @@ module Text.XML.Light.Wrapper
   -- * Element extraction
   , ElemParser
   , runElemParser
+  , parseElem
   , attrib
   , children
   , contents
@@ -77,7 +89,7 @@ data Err = ErrExpect
              , location :: Path
              } -- ^ Expected end of contents
          | ErrNull
-             { expected :: String
+             { expected :: String  -- ^ expected content
              , location :: Path
              } -- ^ Unexpected end of contents
          | ErrMsg String
@@ -93,6 +105,10 @@ type ElemParser a = ReaderT (Path, XML.Element) (ErrorT Err Identity) a
 
 runElemParser :: Path -> XML.Element -> ElemParser a -> Either Err a
 runElemParser path elem p = runIdentity $ runErrorT $ runReaderT p (path,elem)
+
+-- | @parseElem p element@ parses @element@ with @p@.
+parseElem :: ElemParser a -> XML.Element -> Either Err a
+parseElem p elem = runElemParser [] elem p
 
 
 -- | Extract the value of the attribute with given name.
