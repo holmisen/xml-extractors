@@ -2,7 +2,7 @@ import Control.Applicative
 
 import Data.Maybe
 
-import Text.XML.Light.Wrapper
+import Text.XML.Light.Extractors
 import Text.XML.Light.Input
 
 
@@ -10,7 +10,6 @@ main = do
   s <- getContents
   let cs = parseXML s
   print (parseContents library cs)
-
 
 
 test1 = foo

@@ -28,7 +28,7 @@
 -- __TODO__: Newtype wrappers
 --
 
-module Text.XML.Light.Wrapper
+module Text.XML.Light.Extractors
   ( Path
   , Err(..)
     
