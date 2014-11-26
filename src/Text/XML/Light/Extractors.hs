@@ -48,6 +48,7 @@ module Text.XML.Light.Extractors
   , element
   , text
   , eoc
+  , liftToContent
   ) 
 where
 
@@ -204,3 +205,12 @@ eoc = do
   case xs of
     [] -> return ()
     (x:_) -> throwError (ErrEnd x path)
+
+
+-- | Lift a string function to an content extractor.
+liftToContent :: (String -> Either String a) -> String -> ContentsParser a
+liftToContent f s = do
+  (path,i,x) <- get
+  case f s of
+    Left msg -> throwError (ErrMsg msg (show i : path))
+    Right a  -> return a
