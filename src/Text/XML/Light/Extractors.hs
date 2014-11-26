@@ -48,7 +48,6 @@ module Text.XML.Light.Extractors
   , element
   , text
   , eoc
-  , liftToContent
   ) 
 where
 
@@ -217,9 +216,11 @@ text = first "text" go
 
 
 -- | Lift a string function to a content extractor.
-liftToContent :: (String -> Either Err a) -> String -> ContentsParser a
-liftToContent f s = do
-  (path,i,xs) <- get
-  case f s of
-    Left e  -> throwError (ParseErr e (addIdx i path))
-    Right a -> return a
+-- DOES NOT MAKE SENSE
+
+-- liftToContent :: (String -> Either Err a) -> String -> ContentsParser a
+-- liftToContent f s = do
+--   (path,i,xs) <- get
+--   case f s of
+--     Left e  -> throwError (ParseErr e (addIdx i path))
+--     Right a -> return a
