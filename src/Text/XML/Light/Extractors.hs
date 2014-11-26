@@ -39,6 +39,7 @@ module Text.XML.Light.Extractors
   , attrib
   , children
   , contents
+  , liftToElem
   
   -- * Contents extraction
   , ContentsParser
@@ -92,12 +93,12 @@ data Err = ErrExpect
              { expected :: String  -- ^ expected content
              , location :: Path
              } -- ^ Unexpected end of contents
-         | ErrMsg String
+         | ErrMsg String Path
   deriving Show
 
 
 instance Error Err where
-  strMsg = ErrMsg
+  strMsg msg = ErrMsg msg []
 
 --------------------------------------------------------------------------------
 
@@ -137,6 +138,16 @@ children p = do
   case runContentsParser (qName (elName x) : path) 0 (map XML.Elem $ XML.elChildren x) p of
     Left e -> throwError e
     Right (a,_) -> return a
+
+
+-- | Lift a string function to an element extractor.
+liftToElem :: (String -> Either String a) -> String -> ElemParser a
+liftToElem f s = do
+  (path,x) <- ask
+  case f s of
+    Left msg -> throwError (ErrMsg msg path)
+    Right a  -> return a
+  
 
 --------------------------------------------------------------------------------
 
