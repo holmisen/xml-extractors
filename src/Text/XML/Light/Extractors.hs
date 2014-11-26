@@ -75,41 +75,50 @@ qname name = QName name Nothing Nothing
 -- | Location for some content.
 type Path = [String]
 
+
+addIdx :: Int -> Path -> Path
+addIdx i p = ("[" ++ show i ++ "]") : p
+
+addElem :: XML.Element -> Path -> Path
+addElem e p = elemName e : p
+
+addAttrib :: String -> Path -> Path
+addAttrib a p = ('@':a) : p
+
+
+data ParseErr = ParseErr { err :: Err, context :: Path }
+
 -- | Parsing errors.
 data Err = ErrExpect
-             { expected :: String      -- ^ expected content
-             , found    :: XML.Content -- ^ found content
-             , location :: Path 
-             } -- ^ Some expected content is missing
+           { expected :: String      -- ^ expected content
+           , found    :: XML.Content -- ^ found content
+           } -- ^ Some expected content is missing
          | ErrAttr 
-             { expected :: String       -- ^ expected attribute
-             , atAttrib :: XML.Element  -- ^ element with missing attribute
-             , location :: Path
-             } -- ^ An expected attribute is missing
+           { expected  :: String       -- ^ expected attribute
+           , atElement :: XML.Element  -- ^ element with missing attribute
+           } -- ^ An expected attribute is missing
          | ErrEnd 
-             { found    :: XML.Content
-             , location :: Path
-             } -- ^ Expected end of contents
+           { found    :: XML.Content
+           } -- ^ Expected end of contents
          | ErrNull
-             { expected :: String  -- ^ expected content
-             , location :: Path
-             } -- ^ Unexpected end of contents
-         | ErrMsg String Path
+           { expected :: String  -- ^ expected content
+           } -- ^ Unexpected end of contents
+         | ErrMsg String
   deriving Show
 
 
-instance Error Err where
-  strMsg msg = ErrMsg msg []
+instance Error ParseErr where
+  strMsg msg = ParseErr (ErrMsg msg) []
 
 --------------------------------------------------------------------------------
 
-type ElemParser a = ReaderT (Path, XML.Element) (ErrorT Err Identity) a
+type ElemParser a = ReaderT (Path, XML.Element) (ErrorT ParseErr Identity) a
 
-runElemParser :: Path -> XML.Element -> ElemParser a -> Either Err a
+runElemParser :: Path -> XML.Element -> ElemParser a -> Either ParseErr a
 runElemParser path elem p = runIdentity $ runErrorT $ runReaderT p (path,elem)
 
 -- | @parseElem p element@ parses @element@ with @p@.
-parseElem :: ElemParser a -> XML.Element -> Either Err a
+parseElem :: ElemParser a -> XML.Element -> Either ParseErr a
 parseElem p elem = runElemParser [] elem p
 
 
@@ -119,7 +128,7 @@ attrib :: String -- ^ name of attribute to extract
 attrib name = do
   (p,x) <- ask
   case XML.lookupAttr (qname name) (elAttribs x) of
-    Nothing -> throwError (ErrAttr name x p)
+    Nothing -> throwError (ParseErr (ErrAttr name x) p)
     Just v  -> return v
 
 
@@ -127,7 +136,7 @@ attrib name = do
 contents :: ContentsParser a -> ElemParser a
 contents p = do
   (path,x) <- ask
-  case runContentsParser (elemName x : path) 0 (elContent x) p of
+  case runContentsParser (elemName x : path) (elContent x) p of
     Left e -> throwError e
     Right (a,_) -> return a
 
@@ -136,17 +145,17 @@ contents p = do
 children :: ContentsParser a -> ElemParser a
 children p = do
   (path,x) <- ask
-  case runContentsParser (qName (elName x) : path) 0 (map XML.Elem $ XML.elChildren x) p of
+  case runContentsParser (elemName x : path) (map XML.Elem $ XML.elChildren x) p of
     Left e -> throwError e
     Right (a,_) -> return a
 
 
 -- | Lift a string function to an element extractor.
-liftToElem :: (String -> Either String a) -> String -> ElemParser a
+liftToElem :: (String -> Either Err a) -> String -> ElemParser a
 liftToElem f s = do
   (path,x) <- ask
   case f s of
-    Left msg -> throwError (ErrMsg msg path)
+    Left e   -> throwError (ParseErr e path)
     Right a  -> return a
   
 
@@ -154,63 +163,63 @@ liftToElem f s = do
 
 type Ctx = (Path, Int, [XML.Content])
 
-type ContentsParser a = StateT Ctx (ErrorT Err Identity) a
+type ContentsParser a = StateT Ctx (ErrorT ParseErr Identity) a
 
-runContentsParser :: Path -> Int -> [Content] -> ContentsParser a -> Either Err (a, Ctx)
-runContentsParser path i contents p = runIdentity $ runErrorT $ runStateT p (path,i,contents)
+runContentsParser :: Path -> [Content] -> ContentsParser a -> Either ParseErr (a, Ctx)
+runContentsParser path contents p = 
+  runIdentity $ runErrorT $ runStateT p (path, 1, contents)
 
 
 -- | @parseContents p contents@ parses the contents with @p@.
-parseContents :: ContentsParser a -> [XML.Content] -> Either Err a
-parseContents p cs = fst <$> runContentsParser [] 0 cs p
+parseContents :: ContentsParser a -> [XML.Content] -> Either ParseErr a
+parseContents p cs = fst <$> runContentsParser [] cs p
 
 
-first :: (Path -> Err) -> (Content -> Path -> Either Err a) -> ContentsParser a
-first e f = do
+first :: String -> (Content -> Path -> Either ParseErr a) -> ContentsParser a
+first expect f = do
   (path,i,xs) <- get
-  let path' = ("[" ++ show i ++ "]") : path
   case xs of
-    []     -> throwError $ e path'
+    []     -> throwError $ ParseErr (ErrNull expect) path
     (x:xs) -> do
+      let path' = addIdx i path
       case f x path' of
         Left e -> throwError e
         Right a -> do
-          put (path, i+1, xs)
+          put (path,i+1,xs)
           return a
-
-
--- | @element name p@ parses an element with name @name@ using @p@.
-element :: String -> ElemParser a -> ContentsParser a
-element name p = first (ErrNull name) go
-  where
-    go c@(Elem x) path
-      | elemName x /= name = err c path
-      | otherwise          = runElemParser path x p
-    go c path = err c path
-
-    err c path = Left (ErrExpect name c path)
-
-
--- | Extracts text.
-text :: ContentsParser String
-text = first (ErrNull "text") go 
-  where
-    go (Text x) _    = return (cdData x)
-    go c        path = Left (ErrExpect "text" c path)
 
 
 eoc :: ContentsParser ()
 eoc = do
-  (path,i,xs) <- get
+  (path,_,xs) <- get
   case xs of
-    [] -> return ()
-    (x:_) -> throwError (ErrEnd x path)
+    []    -> return ()
+    (x:_) -> throwError (ParseErr (ErrEnd x) path)
 
 
--- | Lift a string function to an content extractor.
-liftToContent :: (String -> Either String a) -> String -> ContentsParser a
+-- | @element name p@ parses an element with name @name@ using @p@.
+element :: String -> ElemParser a -> ContentsParser a
+element name p = first expect go
+  where
+    go c@(Elem x) path
+      | elemName x == name = runElemParser path x p
+    go c          path     = Left (ParseErr (ErrExpect expect c) path)
+
+    expect = "element " ++ show name
+
+
+-- | Extracts text.
+text :: ContentsParser String
+text = first "text" go 
+  where
+    go (Text x) _    = return (cdData x)
+    go c        path = Left (ParseErr (ErrExpect "text" c) path)
+
+
+-- | Lift a string function to a content extractor.
+liftToContent :: (String -> Either Err a) -> String -> ContentsParser a
 liftToContent f s = do
-  (path,i,x) <- get
+  (path,i,xs) <- get
   case f s of
-    Left msg -> throwError (ErrMsg msg (show i : path))
-    Right a  -> return a
+    Left e  -> throwError (ParseErr e (addIdx i path))
+    Right a -> return a
