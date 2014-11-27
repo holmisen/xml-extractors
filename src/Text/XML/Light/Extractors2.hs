@@ -156,6 +156,19 @@ attrib name = do
     Just v  -> return v
 
 
+attribute :: String -- ^ name of attribute to extract
+          -> Parser String a -- ^ parser to parse the attribute
+          -> ElemParser a
+attribute name p = do
+  (path,x) <- ask
+  case XML.lookupAttr (qname name) (elAttribs x) of
+    Nothing -> throwError (ParseErr (ErrAttr name x) path)
+    Just v  ->
+      case runParser p v (addAttrib name path) of
+        Left e  -> throwError e
+        Right a -> return a
+
+
 -- | @contents p@ parse contents with @p@.
 contents :: ContentsParser a -> ElemParser a
 contents p = do
