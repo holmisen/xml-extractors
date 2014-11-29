@@ -1,0 +1,15 @@
+<foo x="x" y="y">
+  <bar a="a10"/>
+  <baz a="a21"/>
+  <bar a="a11"/>
+  <bar a="a12"/>
+  <baz a="a22"/>
+
+  <ola>
+    <coz b="ola-coz-b"/>
+    <cazzam/>
+  </ola>
+
+  <fum c="13"/>
+  <coz b="b"/>
+</foo>
