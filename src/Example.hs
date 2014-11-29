@@ -6,17 +6,19 @@ import Data.List (find)
 import Numeric (readFloat)
 
 import Text.XML.Light.Extractors
-import Text.XML.Light.Extractors.Err
+import Text.XML.Light.Extractors.Extra
+import Text.XML.Light.Extractors.ShowErr
 import Text.XML.Light.Input
 
 
 main = do
   s <- getContents
   let cs = parseXML s
-  putStrLn $ either showParseErr show (parseContents test1 cs)
+  putStrLn $ either showParseErr show (parseContents example2 cs)
 
 
-test1 = foo
+example1 = foo
+example2 = library
 
 --------------------------------------------------------------------------------
 
@@ -58,7 +60,7 @@ book =
   element "book" $ do
     author <- attrib "author"
     isbn   <- attrib "isbn"
-    pub    <- optional $ attribAs "published" double
+    pub    <- optional $ attribAs "published" float
     contents $ do
       title <- text
       return $ Book title author isbn pub
@@ -66,11 +68,3 @@ book =
 
 library = 
   element "library" $ children $ many book
-
-
-parseDouble :: String -> Maybe Double
-parseDouble = fmap fst . find (null . snd) . readFloat 
-
-
-double :: String -> Either Err Double
-double = maybe (Left $ ErrMsg "Expected double") return . parseDouble
