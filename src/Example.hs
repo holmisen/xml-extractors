@@ -6,16 +6,19 @@ import Data.List (find)
 import Numeric (readFloat)
 
 import Text.XML.Light.Extractors
+import Text.XML.Light.Extractors.Extra
+import Text.XML.Light.Extractors.ShowErr
 import Text.XML.Light.Input
 
 
 main = do
   s <- getContents
   let cs = parseXML s
-  print (parseContents library cs)
+  putStrLn $ either showParseErr show (parseContents example2 cs)
 
 
-test1 = foo
+example1 = foo
+example2 = library
 
 --------------------------------------------------------------------------------
 
@@ -25,9 +28,10 @@ foo =
     y <- attrib "y"
     children $ do
       cs <- many (bar <|> baz)
+      ola <- ola
       o  <- optional fum
       c  <- coz
-      return (x,y, cs ++ maybeToList o ++ [c])
+      return (x,y, cs ++ [ola] ++ maybeToList o ++ [c])
 
 
 bar = element "bar" $ attrib "a"
@@ -37,6 +41,8 @@ baz = element "baz" $ attrib "a"
 coz = element "coz" $ attrib "b"
 
 fum = element "fum" $ attrib "c"
+
+ola = element "ola" $ children $ only coz
 
 --------------------------------------------------------------------------------
 
@@ -54,22 +60,11 @@ book =
   element "book" $ do
     author <- attrib "author"
     isbn   <- attrib "isbn"
-    pub    <- optional (attrib "published" >>= double)
-
+    pub    <- optional $ attribAs "published" float
     contents $ do
       title <- text
-  
       return $ Book title author isbn pub
 
 
 library = 
   element "library" $ children $ many book
-
-
-parseDouble :: String -> Maybe Double
-parseDouble = fmap fst . find (null . snd) . readFloat 
-
-
-double = liftToElem (f . parseDouble)  where
-  f Nothing  = Left "Not a double"
-  f (Just x) = Right x

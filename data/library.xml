@@ -1,0 +1,5 @@
+<library>
+  <book author="John Doe" isbn="13421" published="1foio2.3">Around the World</book>
+  <book author="Astor Martin" isbn="67">The Great Book</book>
+  <foo/>
+</library>

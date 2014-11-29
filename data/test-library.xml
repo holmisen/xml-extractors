@@ -1,0 +1,5 @@
+<library>
+  <book author="John Doe" isbn="23409" published="2007">80 days around the World</book>
+  <book author="Astrid L" isbn="12341">Maddiken</book>
+  <book author="ME" isbn="122" published="yesterday">Yesterdays over</book>
+<library>
