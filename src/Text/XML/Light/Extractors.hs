@@ -64,6 +64,8 @@ import Control.Monad.Trans.State
 
 import Data.Monoid
 
+import qualified Safe
+
 import           Text.XML.Light.Types as XML
 import qualified Text.XML.Light.Proc  as XML
 
@@ -166,20 +168,16 @@ attribAs name f = do
 contents :: ContentsParser a -> ElemParser a
 contents p = do
   (path,x) <- ask
-  let r = runContentsParser p (elContent x) 1 (addElem x path)
+  let r = runContentsParser p (elContent x) 1 path
   makeElemParser $ fmap fst r
-    -- Left e      -> throwError e
-    -- Right (a,_) -> return a
 
 
 -- | @children p@ parse children elements with @p@. Other contents will be ignored.
 children :: ContentsParser a -> ElemParser a
 children p = do
   (path,x) <- ask
-  let r = runContentsParser p (map XML.Elem $ XML.elChildren x) 1 path -- (addElem x path)
+  let r = runContentsParser p (map XML.Elem $ XML.elChildren x) 1 path
   makeElemParser $ fmap fst r
-    -- Left e      -> throwError e
-    -- Right (a,_) -> return a
 
 
 -- | Lift a string function to an element extractor.
@@ -213,11 +211,10 @@ first expect f = do
   case xs of
     []     -> throwError $ ParseErr (ErrNull expect) path
     (x:xs) -> do
-      let path' = addIdx i path
-      case f x path' of
+      case f x (addIdx i path) of
         Fatal e -> throwFatal e
-        Fail e -> throwError e
-        Ok a -> do
+        Fail  e -> throwError e
+        Ok    a -> do
           put (path,i+1,xs)
           return a
 
