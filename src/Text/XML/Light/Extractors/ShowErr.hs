@@ -1,15 +1,14 @@
 module Text.XML.Light.Extractors.ShowErr where
 
+import Data.List
 
 import           Text.XML.Light.Types
 import qualified Text.XML.Light.Output as XML
-import           Text.XML.Light.Extractors (ParseErr(..), Err(..), Path)
-
-import Data.List
+import           Text.XML.Light.Extractors.Internal (ExtractionErr(..), Err(..), Path)
 
 
-showParseErr :: ParseErr -> String
-showParseErr (ParseErr e path) = showErr e ++ "\nin " ++ showPath path
+showExtractionErr :: ExtractionErr -> String
+showExtractionErr (ExtractionErr e path) = showErr e ++ "\nin " ++ showPath path
 
 showPath :: Path -> String
 showPath = intercalate "/" . reverse

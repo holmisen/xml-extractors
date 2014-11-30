@@ -10,7 +10,7 @@ import Text.XML.Light.Input
 
 main = do
   contents <- parseXML <$> getContents
-  putStrLn $ either showParseErr show (parseContents example1 contents)
+  putStrLn $ either showExtractionErr show (extractContents example1 contents)
 
 
 example1 = foo
@@ -42,9 +42,9 @@ ola = element "ola" $ children $ only coz
 
 --------------------------------------------------------------------------------
 
-data Book = Book { title :: String
-                 , author :: String
-                 , isbn :: String
+data Book = Book { title     :: String
+                 , author    :: String
+                 , isbn      :: String
                  , published :: Maybe Double
                  }
  deriving Show
