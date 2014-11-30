@@ -8,7 +8,7 @@
 -- Example:
 --
 -- @
---    data Book = Book { bookdId, author, title, isbn :: String }
+--    data Book = Book { bookdId, author, title :: String, isbn :: Maybe String }
 -- @
 --
 -- @
