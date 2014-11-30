@@ -46,6 +46,7 @@ module Text.XML.Light.Extractors
   -- * Contents extraction
   , ContentsExtractor
   , extractContents
+  , extractDocContents
   , element
   , text
   , textAs
@@ -107,6 +108,12 @@ contents (ContentsExtractor p) = ElementExtractor (Internal.contents p)
 extractContents :: ContentsExtractor a -> [XML.Content] -> Either ExtractionErr a
 extractContents (ContentsExtractor p) cs =
   toEither (fst <$> Internal.runContentsExtractor p cs 1 [])
+
+
+-- | Using 'Text.XML.Light.Input.parseXMLDoc' produces a single
+-- 'Element'. Such an element can be extracted using this function.
+extractDocContents :: ContentsExtractor a -> XML.Element -> Either ExtractionErr a
+extractDocContents p = extractContents p . return . Elem
 
 
 -- | @only p@ fails if there is more contents than extracted by @p@.
