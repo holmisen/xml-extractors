@@ -1,9 +1,6 @@
 import Control.Applicative
 
 import Data.Maybe
-import Data.List (find)
-
-import Numeric (readFloat)
 
 import Text.XML.Light.Extractors
 import Text.XML.Light.Extractors.Extra
@@ -12,9 +9,8 @@ import Text.XML.Light.Input
 
 
 main = do
-  s <- getContents
-  let cs = parseXML s
-  putStrLn $ either showParseErr show (parseContents example2 cs)
+  contents <- parseXML <$> getContents
+  putStrLn $ either showParseErr show (parseContents example1 contents)
 
 
 example1 = foo
