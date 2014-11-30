@@ -14,6 +14,8 @@
 -- @
 --
 -- @
+--    library = many book
+--
 --    book = 'element' "book" $ do
 --             i <- 'attrib' "id"
 --             s <- 'optional' ('attrib' "isbn")
@@ -24,12 +26,9 @@
 -- @
 --
 -- @
---    bookParse = 'parseElement' book
+--    libraryParse = 'parseContents' library
 -- @
 --
--- __TODO__: Newtype wrappers
---
-
 module Text.XML.Light.Extractors
   ( Path
   , Err(..)
