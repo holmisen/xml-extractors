@@ -1,4 +1,4 @@
-module Text.XML.Light.Extractors.Result 
+module Text.XML.Light.Extractors.Internal.Result 
  ( Result(..)
  , toEither
  , escalate

@@ -34,8 +34,8 @@ import Data.Monoid
 import           Text.XML.Light.Types as XML
 import qualified Text.XML.Light.Proc  as XML
 
-import           Text.XML.Light.Extractors.Result hiding (throwError, throwFatal)
-import qualified Text.XML.Light.Extractors.Result as R
+import           Text.XML.Light.Extractors.Internal.Result hiding (throwError, throwFatal)
+import qualified Text.XML.Light.Extractors.Internal.Result as R
 
 --------------------------------------------------------------------------------
 

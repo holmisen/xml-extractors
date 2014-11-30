@@ -62,8 +62,8 @@ import qualified Text.XML.Light.Proc  as XML
 
 import           Text.XML.Light.Extractors.Internal (ParseErr, Err, Path)
 import qualified Text.XML.Light.Extractors.Internal as Internal
-import           Text.XML.Light.Extractors.Result hiding (throwError, throwFatal)
-import qualified Text.XML.Light.Extractors.Result as R
+import           Text.XML.Light.Extractors.Internal.Result hiding (throwError, throwFatal)
+import qualified Text.XML.Light.Extractors.Internal.Result as R
 
 --------------------------------------------------------------------------------
 
