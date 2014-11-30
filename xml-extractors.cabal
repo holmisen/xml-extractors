@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Text.XML.Light.Extractors, 
-                       Text.XML.Light.Extractors.Result,
+                       Text.XML.Light.Extractors.Internal,
+                       Text.XML.Light.Extractors.Internal.Result,
                        Text.XML.Light.Extractors.Extra,
                        Text.XML.Light.Extractors.ShowErr
   -- other-modules:       
