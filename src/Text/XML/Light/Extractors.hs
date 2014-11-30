@@ -26,6 +26,7 @@
 -- @
 --
 -- @
+--    libraryParse :: ['XML.Content'] -> Either 'ParseErr' [Book]
 --    libraryParse = 'parseContents' library
 -- @
 --
@@ -80,17 +81,23 @@ parseElement :: ElementParser a -> XML.Element -> Either ParseErr a
 parseElement (ElementParser p) elem = toEither $ Internal.runElementParser p elem []
 
 
+-- | @attrib name@ extracts the value of attribute @name@.
 attrib :: String -> ElementParser String
 attrib = ElementParser . Internal.attrib
 
+
+-- | @attribAs name f@ extracts the value of attribute @name@ and runs
+-- it through a conversion/validation function.
 attribAs :: String -> (String -> Either Err a) -> ElementParser a
 attribAs name = ElementParser . (Internal.attribAs name)
 
 
+-- | @children p@ extract only child elements with @p@.
 children :: ContentsParser a -> ElementParser a
 children (ContentsParser p) = ElementParser (Internal.children p)
 
 
+-- | @contents p@ extract contents with @p@.
 contents :: ContentsParser a -> ElementParser a
 contents (ContentsParser p) = ElementParser (Internal.contents p)
 
@@ -102,20 +109,26 @@ parseContents (ContentsParser p) cs =
   toEither (fst <$> Internal.runContentsParser p cs 1 [])
 
 
+-- | @only p@ fails if there is more contents than parsed by @p@.
 only :: ContentsParser a -> ContentsParser a
 only p = p <* eoc
 
 
+-- | Succeeds only when there is no more content.
 eoc :: ContentsParser ()
 eoc = ContentsParser Internal.eoc
 
 
+-- | @element name p@ extracts a @name@ element with @p@.
 element :: String -> ElementParser a -> ContentsParser a
 element name (ElementParser a) = ContentsParser $ Internal.element name a
 
 
+-- | Extracts text.
 text :: ContentsParser String
 text = ContentsParser Internal.text
 
+
+-- | Extracts text applied to a conversion function.
 textAs :: (String -> Either Err a) -> ContentsParser a
 textAs = ContentsParser . Internal.textAs
