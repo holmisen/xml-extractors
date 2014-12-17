@@ -4,7 +4,7 @@ synopsis:            Simple wrapper over xml (Text.XML.Light) to extract data fr
 description:
   This is a library to make it easier to extract data from parsed xml.
   .
-  See 'Text.XML.Light.Extractors' for an example.
+  See the 'Text.XML.Light.Extractors' module for an example.
   .
   = Motivation
   .
