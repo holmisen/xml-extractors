@@ -2,31 +2,51 @@
 
 -- | A library for making extraction of information from parsed XML easier.
 --
--- The 'Control.Applicative' module contains some useful combinators
--- like 'optional', 'many' and '<|>'.
+-- = Example
 --
--- Example:
+-- Suppose you have an xml file of books like this:
+--
+-- > <?xml version="1.0"?>
+-- > <library>
+-- >   <book id="1" isbn="23234-1">
+-- >     <author>John Doe</author>
+-- >     <title>Some book</title>
+-- >   </book>
+-- >   <book id="2">
+-- >     <author>You</author>
+-- >     <title>The Great Event</title>
+-- >   </book>
+-- >   ...
+-- > </library>
+--
+-- And a data type for a book:
+--
+-- > data Book = Book { bookdId       :: Int
+-- >                  , isbn          :: Maybe String
+-- >                  , author, title :: String
+-- >                  }
+--
+-- You can parse the xml file into a generic tree structure using
+-- 'Text.XML.Light.Input.parseXMLDoc', then extract information from
+-- the tree using this library.
 --
 -- @
---    data Book = Book { bookdId, author, title :: String, isbn :: Maybe String }
--- @
---
--- @
---    library = many book
+--    library = 'element' "library" $ 'children' $ 'many' book
 --
 --    book = 'element' "book" $ do
---             i <- 'attrib' "id"
+--             i <- 'attribAs' "id" 'Text.XML.Light.Extractors.Extra.integer'
 --             s <- 'optional' ('attrib' "isbn")
 --             'children' $ do
---               t <- 'element' "title" $ 'contents' $ 'text'
 --               a <- 'element' "author" $ 'contents' $ 'text'
+--               t <- 'element' "title" $ 'contents' $ 'text'
 --               return $ Book { bookId = i, author = a, title = t, isbn = s }
+--
+--    extractLibrary :: 'XML.Element' -> 'Either' 'ExtractionErr' [Book]
+--    extractLibrary = 'extractDocContents' library
 -- @
 --
--- @
---    extractLibrary :: ['XML.Content'] -> Either 'ExtractionErr' [Book]
---    extractLibrary = 'extractContents' library
--- @
+-- /Note:/ The 'Control.Applicative' module contains some useful
+-- combinators like 'optional', 'many' and '<|>'.
 --
 module Text.XML.Light.Extractors
   ( 
