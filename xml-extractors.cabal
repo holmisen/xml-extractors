@@ -1,26 +1,27 @@
 name:                xml-extractors
-version:             0.2.0.0
-synopsis:            Simple wrapper over xml (Text.XML.Light) to extract data from parsed xml
+version:             0.2.1.0
+synopsis:            Simple wrapper over xml to extract data from parsed xml
 description:
-  This is a library to make it easier to extract data from parsed xml.
+  This is a library to simplify extraction of data from parsed xml.
   .
   See the 'Text.XML.Light.Extractors' module for an example.
   .
   = Motivation
   .
-  The xml package provides functions to parse and get information
-  from xml data. You can parse an xml string into a generic xml tree
-  representation. Then to extract information from that tree and into
-  you own data types you can use this library.
+  The `xml` package provides functions to parse and get information from
+  xml data. It will parse an xml string into a generic tree
+  representation. Extracting information from such a tree while
+  keeping track of location to handle errors is tricky. This library
+  helps with that.
   .
   If there is an error during extraction (expected information is
-  absent or wrong), you will get an error value with position information.
+  absent or wrong), it will return an error value with position information.
   .
   = Some limitations
   .
-    * Only handles unqualified names, so far.
+    * Only handles unqualified names.
   .
-    * No column or line number reference in error values.
+    * No column number and sometimes no line number reference in error values.
  
 homepage:            https://github.com/holmisen/xml-extractors
 license:             BSD3
@@ -28,7 +29,8 @@ license-file:        LICENSE
 author:              Johan Holmquist
 maintainer:          holmisen@gmail.com
 -- copyright:           
-category:            Text, XML
+category:            XML
+tested-with:         GHC == 7.8.3
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
@@ -39,7 +41,7 @@ library
                        Text.XML.Light.Extractors.Internal.Result,
                        Text.XML.Light.Extractors.Extra,
                        Text.XML.Light.Extractors.ShowErr
-  -- other-modules:       
+  -- other-modules:
   other-extensions:    NoMonomorphismRestriction
   build-depends:       base >=4.6 && <4.8,
                        xml >=1.3 && <1.4,

@@ -1,6 +1,5 @@
 module Text.XML.Light.Extractors.Extra where
 
-
 import Safe (readMay)
 import Text.XML.Light.Extractors
 

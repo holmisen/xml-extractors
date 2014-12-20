@@ -21,17 +21,19 @@
 --
 -- And a data type for a book:
 --
--- > data Book = Book { bookdId       :: Int
+-- > data Book = Book { bookId        :: Int
 -- >                  , isbn          :: Maybe String
 -- >                  , author, title :: String
 -- >                  }
 --
 -- You can parse the xml file into a generic tree structure using
--- 'Text.XML.Light.Input.parseXMLDoc', then extract information from
--- the tree using this library.
+-- 'Text.XML.Light.Input.parseXMLDoc' from the `xml` package.
 --
+-- Using this library one can define extractors to extract data from
+-- the generic tree.
+-- 
 -- @
---    library = 'element' "library" $ 'children' $ 'many' book
+--    library = 'element' "library" $ 'children' $ 'only' $ 'many' book
 --
 --    book = 'element' "book" $ do
 --             i <- 'attribAs' "id" 'Text.XML.Light.Extractors.Extra.integer'
@@ -45,8 +47,16 @@
 --    extractLibrary = 'extractDocContents' library
 -- @
 --
--- /Note:/ The 'Control.Applicative' module contains some useful
--- combinators like 'optional', 'many' and '<|>'.
+-- = Notes
+--
+--  * The "Control.Applicative" module contains some useful
+--    combinators like 'optional', 'many' and '<|>'.
+--
+--  * The "Text.XML.Light.Extractors.ShowErr" contains some
+--    predefined functions to convert error values to strings.
+--
+--  * The "Text.XML.Light.Extractors.Extra" module provides some
+--    functions to read numeric data.
 --
 module Text.XML.Light.Extractors
   ( 
