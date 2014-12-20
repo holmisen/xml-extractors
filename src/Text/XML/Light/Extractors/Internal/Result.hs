@@ -69,6 +69,7 @@ escalate x        = x
 
 
 -- | Maps 'Fail' and 'Fatal' to 'Left'.
+toEither :: Result a b -> Either a b
 toEither (Fatal e) = Left e
 toEither (Fail e)  = Left e
 toEither (Ok a)    = Right a
@@ -145,13 +146,13 @@ mapResult f = ResultT . fmap f . runResultT
 
 --------------------------------------------------------------------------------
 
-testX :: ResultT String IO Int
-testX = lift (print "x") >> return 1
+-- testX :: ResultT String IO Int
+-- testX = lift (print "x") >> return 1
 
-testY :: ResultT String IO Int
-testY = lift (print "error") >> throwError "error"
+-- testY :: ResultT String IO Int
+-- testY = lift (print "error") >> throwError "error"
 
-testZ :: ResultT String IO Int
-testZ = lift (print "fatal") >> throwFatal "fatal"
+-- testZ :: ResultT String IO Int
+-- testZ = lift (print "fatal") >> throwFatal "fatal"
 
 --------------------------------------------------------------------------------
