@@ -23,13 +23,9 @@ module Text.XML.Light.Extractors.Internal
   ) 
 where
 
-import Control.Applicative
-
 import Control.Monad.Identity
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.State
-
-import Data.Monoid
 
 import           Text.XML.Light.Types as XML
 import qualified Text.XML.Light.Proc  as XML
@@ -39,8 +35,10 @@ import qualified Text.XML.Light.Extractors.Internal.Result as R
 
 --------------------------------------------------------------------------------
 
+elemName :: Element -> String
 elemName = qName . elName
 
+qname :: String -> QName
 qname name = QName name Nothing Nothing
 
 --------------------------------------------------------------------------------
@@ -53,8 +51,6 @@ addIdx :: Int -> Path -> Path
 addIdx i p = show i : p
 
 addElem :: XML.Element -> Path -> Path
-
-
 addElem e p = elemName e : p
 
 addAttrib :: String -> Path -> Path
@@ -99,7 +95,7 @@ throwFatal = lift . R.throwFatal
 type ElementExtractor a = ReaderT (Path, XML.Element) (ResultT ExtractionErr Identity) a
 
 runElementExtractor :: ElementExtractor a -> XML.Element -> Path -> Result ExtractionErr a
-runElementExtractor p elem path = runIdentity $ runResultT $ runReaderT p (path,elem)
+runElementExtractor p elem path = runIdentity $ runResultT $ runReaderT p (path, elem)
 
 makeElementExtractor :: Result ExtractionErr a -> ElementExtractor a
 makeElementExtractor (Fatal e) = throwFatal e
@@ -142,7 +138,7 @@ children p = do
 -- | Lift a string function to an element extractor.
 liftToElement :: (String -> Either Err a) -> String -> ElementExtractor a
 liftToElement f s = do
-  (path,x) <- ask
+  (path,_) <- ask
   case f s of
     Left e   -> throwError (ExtractionErr e path)
     Right a  -> return a
@@ -184,9 +180,9 @@ eoc = do
 element :: String -> ElementExtractor a -> ContentsExtractor a
 element name p = first expect go
   where
-    go c@(Elem x) path
+    go (Elem x) path
       | elemName x == name = escalate $ runElementExtractor p x (addElem x path)
-    go c          path     = Fail (ExtractionErr (ErrExpect expect c) path)
+    go c        path       = Fail (ExtractionErr (ErrExpect expect c) path)
 
     expect = "element " ++ show name
 
