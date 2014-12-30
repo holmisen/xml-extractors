@@ -19,6 +19,7 @@ module Text.XML.Light.Extractors.Internal
   , element
   , text
   , textAs
+  , anyContent
   , eoc
   ) 
 where
@@ -28,7 +29,7 @@ import Control.Monad.Trans.Reader
 import Control.Monad.Trans.State
 
 import           Text.XML.Light.Types as XML
-import qualified Text.XML.Light.Proc  as XML
+import qualified Text.XML.Light       as XML
 
 import           Text.XML.Light.Extractors.Internal.Result hiding (throwError, throwFatal)
 import qualified Text.XML.Light.Extractors.Internal.Result as R
@@ -38,23 +39,23 @@ import qualified Text.XML.Light.Extractors.Internal.Result as R
 elemName :: Element -> String
 elemName = qName . elName
 
-qname :: String -> QName
-qname name = QName name Nothing Nothing
-
 --------------------------------------------------------------------------------
 
 -- | Location for some content.
+--
+-- For now it is a reversed list of content indices and element
+-- names. This may change to something less \"stringly typed\".
 type Path = [String]
 
 
-addIdx :: Int -> Path -> Path
-addIdx i p = show i : p
+pushIdx :: Int -> Path -> Path
+pushIdx i p = show i : p
 
-addElem :: XML.Element -> Path -> Path
-addElem e p = elemName e : p
+pushElem :: XML.Element -> Path -> Path
+pushElem e p = elemName e : p
 
-addAttrib :: String -> Path -> Path
-addAttrib a p = ('@':a) : p
+pushAttrib :: String -> Path -> Path
+pushAttrib a p = ('@':a) : p
 
 --------------------------------------------------------------------------------
 
@@ -112,8 +113,8 @@ attribAs :: String -- ^ name of attribute to extract
          -> ElementExtractor a
 attribAs name f = do
   (path,x) <- ask
-  let path' = addAttrib name path
-  case XML.lookupAttr (qname name) (elAttribs x) of
+  let path' = pushAttrib name path
+  case XML.lookupAttr (XML.unqual name) (elAttribs x) of
     Nothing -> throwError $ ExtractionErr (ErrAttr name x) path
     Just s  ->
       case f s of
@@ -143,7 +144,6 @@ liftToElement f s = do
     Left e   -> throwError (ExtractionErr e path)
     Right a  -> return a
   
-
 --------------------------------------------------------------------------------
 
 type Ctx = (Path, Int, [XML.Content])
@@ -161,7 +161,7 @@ first expect f = do
   case xs of
     []     -> throwError $ ExtractionErr (ErrNull expect) path
     (x:xs) -> do
-      case f x (addIdx i path) of
+      case f x (pushIdx i path) of
         Fatal e -> throwFatal e
         Fail  e -> throwError e
         Ok    a -> do
@@ -169,19 +169,11 @@ first expect f = do
           return a
 
 
-eoc :: ContentsExtractor ()
-eoc = do
-  (path,_,xs) <- get
-  case xs of
-    []    -> return ()
-    (x:_) -> throwError (ExtractionErr (ErrEnd x) path)
-
-
 element :: String -> ElementExtractor a -> ContentsExtractor a
 element name p = first expect go
   where
     go (Elem x) path
-      | elemName x == name = escalate $ runElementExtractor p x (addElem x path)
+      | elemName x == name = escalate $ runElementExtractor p x (pushElem x path)
     go c        path       = Fail (ExtractionErr (ErrExpect expect c) path)
 
     expect = "element " ++ show name
@@ -197,4 +189,17 @@ textAs f = first "text" go
     go c path = Fail $ ExtractionErr (ErrExpect "text" c) path
 
 
+text :: ContentsExtractor String
 text = textAs return
+
+
+anyContent :: ContentsExtractor Content
+anyContent = first "something" (const . return)
+
+
+eoc :: ContentsExtractor ()
+eoc = do
+  (path,_,xs) <- get
+  case xs of
+    []    -> return ()
+    (x:_) -> throwError (ExtractionErr (ErrEnd x) path)
