@@ -1,6 +1,6 @@
-{-# LANGUAGE NoMonomorphismRestriction, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
--- | A library for making extraction of information from parsed XML easier.
+-- | Functions to extract data from parsed XML.
 --
 -- = Example
 --
@@ -80,13 +80,14 @@ module Text.XML.Light.Extractors
   , element
   , text
   , textAs
+  , choice
+  , anyContent
   , eoc
   , only
   ) 
 where
 
 import Control.Applicative
-
 
 import           Text.XML.Light.Types as XML
 import qualified Text.XML.Light.Proc  as XML
@@ -147,6 +148,8 @@ extractDocContents p = extractContents p . return . Elem
 
 
 -- | @only p@ fails if there is more contents than extracted by @p@.
+--
+-- > only p = p <* eoc
 only :: ContentsExtractor a -> ContentsExtractor a
 only p = p <* eoc
 
@@ -169,3 +172,13 @@ text = ContentsExtractor Internal.text
 -- | Extracts text applied to a conversion function.
 textAs :: (String -> Either Err a) -> ContentsExtractor a
 textAs = ContentsExtractor . Internal.textAs
+
+
+-- | Extracts first matching.
+choice :: [ContentsExtractor a] -> ContentsExtractor a
+choice = foldr (<|>) empty
+
+
+-- | Extracts one 'Content' item.
+anyContent :: ContentsExtractor Content
+anyContent = ContentsExtractor Internal.anyContent
