@@ -1,4 +1,4 @@
--- | This module provide default functions to translate errors into strings.
+-- | This module provides functions to translate errors into strings.
 module Text.XML.Light.Extractors.ShowErr
   ( showExtractionErr
   , showErr
@@ -14,7 +14,8 @@ import           Text.XML.Light.Extractors.Internal (ExtractionErr(..), Err(..),
 
 
 showExtractionErr :: ExtractionErr -> String
-showExtractionErr (ExtractionErr e path) = showErr e ++ "in path: " ++ showPath path
+showExtractionErr (ExtractionErr e path) =
+  unlines [showErr e ++ "in path: " ++ showPath path]
 
 showPath :: Path -> String
 showPath = intercalate "/" . reverse
