@@ -1,5 +1,5 @@
-xml-extractor
-=============
+xml-extractors
+==============
 
 Simple wrapper over [xml](http://hackage.haskell.org/package/xml) to
 extract data from parsed xml.
