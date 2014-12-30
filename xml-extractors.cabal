@@ -1,12 +1,12 @@
 name:                xml-extractors
-version:             0.2.1.0
-synopsis:            Simple wrapper over xml to extract data from parsed xml
+version:             0.3.0.0
+synopsis:            Wrapper over xml to extract data from parsed xml
 description:
   This is a library to simplify extraction of data from parsed xml.
   .
   See the 'Text.XML.Light.Extractors' module for an example.
   .
-  = Motivation
+  /Motivation/
   .
   The `xml` package provides functions to parse and get information from
   xml data. It will parse an xml string into a generic tree
@@ -17,9 +17,9 @@ description:
   If there is an error during extraction (expected information is
   absent or wrong), it will return an error value with position information.
   .
-  = Some limitations
+  /Some limitations/
   .
-    * Only handles unqualified names.
+    * Only handles unqualified names. (This is by design to simplify usage.)
   .
     * No column number and sometimes no line number reference in error values.
  
@@ -30,9 +30,9 @@ author:              Johan Holmquist
 maintainer:          holmisen@gmail.com
 -- copyright:           
 category:            XML
-tested-with:         GHC == 7.8.3
+tested-with:         GHC == 7.8.3, GHC == 7.8.4
 build-type:          Simple
-extra-source-files:  README.md
+extra-source-files:  README.md, changelog.md
 cabal-version:       >=1.10
 
 library
@@ -50,3 +50,4 @@ library
                        safe >=0.3 && <0.4
   hs-source-dirs:      src
   default-language:    Haskell2010
+--  ghc-options:         -Wall
