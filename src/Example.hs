@@ -3,8 +3,6 @@ import Control.Applicative
 import Data.Maybe
 
 import Text.XML.Light.Extractors
-import Text.XML.Light.Extractors.Extra
-import Text.XML.Light.Extractors.ShowErr
 import Text.XML.Light.Input
 
 

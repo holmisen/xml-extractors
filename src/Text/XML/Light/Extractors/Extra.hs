@@ -1,7 +1,6 @@
 module Text.XML.Light.Extractors.Extra where
 
 import Safe (readMay)
-import Text.XML.Light.Extractors
 
 
 -- | Reads a floating point value or return @'Left' "float"@ if

@@ -1,6 +1,12 @@
 0.4.0.0
 
-  * Added `eitherMessageOrValue` to the `Extractors` module.
+  * Added several functions to the `Extractors` module:
+
+    * `eitherMessageOrValue` from the `ShowErr` module and some others.
+
+	* Both conversion functions from `Extra`.
+
+    This means less imports in many cases.
 
   * Some changes were made to the `Err` datatype:
 

@@ -85,8 +85,11 @@ module Text.XML.Light.Extractors
   , eoc
   , only
 
-  -- * Conversion
+  -- * Utils
+  , showExtractionErr
   , eitherMessageOrValue
+  , integer
+  , float
   ) 
 where
 
@@ -95,6 +98,7 @@ import Control.Applicative
 import           Text.XML.Light.Types as XML
 import qualified Text.XML.Light.Proc  as XML
 
+import           Text.XML.Light.Extractors.Extra
 import           Text.XML.Light.Extractors.ShowErr  (showExtractionErr)
 import           Text.XML.Light.Extractors.Internal (ExtractionErr, Err, Path)
 import qualified Text.XML.Light.Extractors.Internal as Internal
