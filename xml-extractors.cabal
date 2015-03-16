@@ -1,5 +1,5 @@
 name:                xml-extractors
-version:             0.3.0.0
+version:             0.4.0.0
 synopsis:            Wrapper over xml to extract data from parsed xml
 description:
   This is a library to simplify extraction of data from parsed xml.

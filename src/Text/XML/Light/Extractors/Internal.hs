@@ -43,8 +43,9 @@ elemName = qName . elName
 
 -- | Location for some content.
 --
--- For now it is a reversed list of content indices and element
--- names. This may change to something less \"stringly typed\".
+-- For now it is a reversed list of content indices (starting at 1)
+-- and element names. This may change to something less \"stringly
+-- typed\".
 type Path = [String]
 
 
@@ -65,19 +66,24 @@ data ExtractionErr = ExtractionErr { err :: Err, context :: Path }
 
 
 -- | Extraction errors.
-data Err = ErrExpect
-           { expected :: String      -- ^ expected content
-           , found    :: XML.Content -- ^ found content
+data Err = ErrExpectContent
+           { expectedContent :: String
+           , foundContent    :: XML.Content
            } -- ^ Some expected content is missing
-         | ErrAttr 
-           { expected  :: String       -- ^ expected attribute
-           , atElement :: XML.Element  -- ^ element with missing attribute
+         | ErrExpectAttrib 
+           { expectedAttrib :: String       -- ^ name of expected attribute
+           , atElement      :: XML.Element  -- ^ element with missing attribute
            } -- ^ An expected attribute is missing
+         | ErrAttribValue
+           { expectedValue  :: String       -- ^ description of expected value
+           , foundValue     :: String       -- ^ the value found
+           , atElement      :: XML.Element  -- ^ element with bad attribute
+           } -- ^ An attribute value was bad
          | ErrEnd 
-           { found    :: XML.Content
+           { foundContent   :: XML.Content
            } -- ^ Expected end of contents
          | ErrNull
-           { expected :: String  -- ^ expected content
+           { expectedContent :: String
            } -- ^ Unexpected end of contents
          | ErrMsg String
   deriving Show
@@ -109,16 +115,16 @@ attrib name = attribAs name return
 
 
 attribAs :: String -- ^ name of attribute to extract
-         -> (String -> Either Err a)
+         -> (String -> Either String a) -- ^ function returning given string to some value or an error message
          -> ElementExtractor a
 attribAs name f = do
   (path,x) <- ask
   let path' = pushAttrib name path
   case XML.lookupAttr (XML.unqual name) (elAttribs x) of
-    Nothing -> throwError $ ExtractionErr (ErrAttr name x) path
+    Nothing -> throwError $ ExtractionErr (ErrExpectAttrib name x) path
     Just s  ->
       case f s of
-        Left e  -> throwFatal $ ExtractionErr e path'
+        Left e  -> throwFatal $ ExtractionErr (ErrAttribValue e s x) path'
         Right a -> return a
 
 
@@ -136,13 +142,13 @@ children p = do
   makeElementExtractor $ fmap fst r
 
 
--- | Lift a string function to an element extractor.
-liftToElement :: (String -> Either Err a) -> String -> ElementExtractor a
-liftToElement f s = do
-  (path,_) <- ask
-  case f s of
-    Left e   -> throwError (ExtractionErr e path)
-    Right a  -> return a
+-- -- | Lift a string function to an element extractor.
+-- liftToElement :: (String -> Either Err a) -> String -> ElementExtractor a
+-- liftToElement f s = do
+--   (path,_) <- ask
+--   case f s of
+--     Left e   -> throwError (ExtractionErr e path)
+--     Right a  -> return a
   
 --------------------------------------------------------------------------------
 
@@ -174,7 +180,7 @@ element name p = first expect go
   where
     go (Elem x) path
       | elemName x == name = escalate $ runElementExtractor p x (pushElem x path)
-    go c        path       = Fail (ExtractionErr (ErrExpect expect c) path)
+    go c        path       = Fail (ExtractionErr (ErrExpectContent expect c) path)
 
     expect = "element " ++ show name
 
@@ -186,7 +192,7 @@ textAs f = first "text" go
       case f (cdData x) of
         Left e  -> Fatal $ ExtractionErr e path
         Right s -> return s
-    go c path = Fail $ ExtractionErr (ErrExpect "text" c) path
+    go c path = Fail $ ExtractionErr (ErrExpectContent "text" c) path
 
 
 text :: ContentsExtractor String

@@ -84,6 +84,9 @@ module Text.XML.Light.Extractors
   , anyContent
   , eoc
   , only
+
+  -- * Conversion
+  , eitherMessageOrValue
   ) 
 where
 
@@ -92,6 +95,7 @@ import Control.Applicative
 import           Text.XML.Light.Types as XML
 import qualified Text.XML.Light.Proc  as XML
 
+import           Text.XML.Light.Extractors.ShowErr  (showExtractionErr)
 import           Text.XML.Light.Extractors.Internal (ExtractionErr, Err, Path)
 import qualified Text.XML.Light.Extractors.Internal as Internal
 import           Text.XML.Light.Extractors.Internal.Result hiding (throwError, throwFatal)
@@ -120,7 +124,11 @@ attrib = ElementExtractor . Internal.attrib
 
 -- | @attribAs name f@ extracts the value of attribute @name@ and runs
 -- it through a conversion/validation function.
-attribAs :: String -> (String -> Either Err a) -> ElementExtractor a
+--
+-- The conversion function takes a string with the value and returns
+-- either a description of the expected format of the value or the
+-- converted value.
+attribAs :: String -> (String -> Either String a) -> ElementExtractor a
 attribAs name = ElementExtractor . (Internal.attribAs name)
 
 
@@ -182,3 +190,11 @@ choice = foldr (<|>) empty
 -- | Extracts one 'Content' item.
 anyContent :: ContentsExtractor Content
 anyContent = ContentsExtractor Internal.anyContent
+
+
+-- | Convenience function to convert extraction errors to string
+-- messages using 'showExtractionErr'.
+--
+-- > eitherMessageOrValue = either (Left . showExtractionErr) Right
+eitherMessageOrValue :: Either ExtractionErr a -> Either String a
+eitherMessageOrValue = either (Left . showExtractionErr) Right
