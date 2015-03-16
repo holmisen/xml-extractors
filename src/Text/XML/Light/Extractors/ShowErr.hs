@@ -22,22 +22,28 @@ showPath = intercalate "/" . reverse
 
 
 showErr :: Err -> String
-showErr (ErrExpect expect found) =
+showErr (ErrExpectContent expect found) =
   unlines
-  [ unwords ["Expected", expect, "found"]
-  , take 60 $ XML.showContent found
+  [ unwords ["Expected:", expect]
+  , unwords ["Found:", take 60 $ XML.showContent found]
   , unwords ["at line:", showLine found]
   ]
-showErr (ErrAttr expect parent) =
+showErr (ErrExpectAttrib expect parent) =
   unlines
   [ unwords ["Missing attribute", show expect, "of", show $ qName $ elName parent]
   , unwords ["at line:", showLine $ Elem parent]
+  ]
+showErr (ErrAttribValue expect found parent) =
+  unlines
+  [ unwords ["Expected:", expect]
+  , unwords ["Found:", show found]
+  , unwords ["line:", showLine $ Elem parent]
   ]
 showErr (ErrMsg msg) =
   unlines [msg]
 
 showErr (ErrNull expected) = 
-  unlines [unwords ["Expected", expected]]
+  unlines [unwords ["Expected:", expected]]
 
 showErr (ErrEnd found) =
   unlines [unwords ["Unexpected:", take 60 $ XML.showContent found]]

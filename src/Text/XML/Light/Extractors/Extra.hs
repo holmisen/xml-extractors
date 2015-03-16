@@ -4,11 +4,13 @@ import Safe (readMay)
 import Text.XML.Light.Extractors
 
 
-float :: (Floating a, Read a) => String -> Either Err a
-float s = 
-  maybe (Left $ ErrMsg ("Expected float, found: " ++ show s)) return (readMay s)
+-- | Reads a floating point value or return @'Left' "float"@ if
+-- the read fails.
+float :: (Floating a, Read a) => String -> Either String a
+float = maybe (Left "float") return . readMay
 
 
-integer :: (Integral a, Read a) => String -> Either Err a
-integer s = 
-  maybe (Left $ ErrMsg ("Expected integer, found: " ++ show s)) return (readMay s)
+-- | Reads an integer value or return @'Left' "integer"@ if the read
+-- fails.
+integer :: (Integral a, Read a) => String -> Either String a
+integer = maybe (Left "integer") return . readMay
