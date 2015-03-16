@@ -13,6 +13,15 @@ import qualified Text.XML.Light.Output as XML
 import           Text.XML.Light.Extractors.Internal (ExtractionErr(..), Err(..), Path)
 
 
+-- | Converts an extraction error to a multi line string message.
+--
+-- Paths will convert like this:
+--
+-- @1\/foo\/2\/bar\/\@x@
+--
+-- which represents the \"x\" attribute of the \"bar\" element, which
+-- is the second content of the \"foo\" element which is the first
+-- content from the root.
 showExtractionErr :: ExtractionErr -> String
 showExtractionErr (ExtractionErr e path) =
   unlines [showErr e ++ "in path: " ++ showPath path]
