@@ -49,14 +49,13 @@
 --
 -- = Notes
 --
+--  * The 'only' combinator can be used to exhaustively extract contents.
+--
 --  * The "Control.Applicative" module contains some useful
 --    combinators like 'optional', 'many' and '<|>'.
 --
 --  * The "Text.XML.Light.Extractors.ShowErr" contains some
 --    predefined functions to convert error values to strings.
---
---  * The "Text.XML.Light.Extractors.Extra" module provides some
---    functions to read numeric data.
 --
 module Text.XML.Light.Extractors
   ( 
