@@ -29,19 +29,19 @@
 -- You can parse the xml file into a generic tree structure using
 -- 'Text.XML.Light.Input.parseXMLDoc' from the `xml` package.
 --
--- Using this library one can define extractors to extract data from
+-- Using this library one can define extractors to extract Books from
 -- the generic tree.
 -- 
 -- @
---    library = 'element' "library" $ 'children' $ 'only' $ 'many' book
---
 --    book = 'element' "book" $ do
 --             i <- 'attribAs' "id" 'Text.XML.Light.Extractors.Extra.integer'
 --             s <- 'optional' ('attrib' "isbn")
 --             'children' $ do
 --               a <- 'element' "author" $ 'contents' $ 'text'
 --               t <- 'element' "title" $ 'contents' $ 'text'
---               return $ Book { bookId = i, author = a, title = t, isbn = s }
+--               return Book { bookId = i, author = a, title = t, isbn = s }
+--
+--    library = 'element' "library" $ 'children' $ 'only' $ 'many' book
 --
 --    extractLibrary :: 'XML.Element' -> 'Either' 'ExtractionErr' [Book]
 --    extractLibrary = 'extractDocContents' library
@@ -95,14 +95,12 @@ where
 import Control.Applicative
 
 import           Text.XML.Light.Types as XML
-import qualified Text.XML.Light.Proc  as XML
 
 import           Text.XML.Light.Extractors.Extra
 import           Text.XML.Light.Extractors.ShowErr  (showExtractionErr)
 import           Text.XML.Light.Extractors.Internal (ExtractionErr, Err, Path)
 import qualified Text.XML.Light.Extractors.Internal as Internal
 import           Text.XML.Light.Extractors.Internal.Result hiding (throwError, throwFatal)
-import qualified Text.XML.Light.Extractors.Internal.Result as R
 
 --------------------------------------------------------------------------------
 
