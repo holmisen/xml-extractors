@@ -1,3 +1,5 @@
+module Example where
+
 import Control.Applicative
 
 import Data.Maybe
@@ -60,5 +62,5 @@ book =
       return $ Book title author isbn pub
 
 
-library = 
+library =
   element "library" $ children $ many book
