@@ -120,7 +120,7 @@ attribAs :: String -- ^ name of attribute to extract
 attribAs name f = do
   (path,x) <- ask
   let path' = pushAttrib name path
-  case XML.lookupAttr (XML.unqual name) (elAttribs x) of
+  case XML.lookupAttr (XML.unqual name) (XML.elAttribs x) of
     Nothing -> throwError $ ExtractionErr (ErrExpectAttrib name x) path
     Just s  ->
       case f s of
@@ -131,7 +131,7 @@ attribAs name f = do
 contents :: ContentsExtractor a -> ElementExtractor a
 contents p = do
   (path,x) <- ask
-  let r = runContentsExtractor p (elContent x) 1 path
+  let r = runContentsExtractor p (XML.elContent x) 1 path
   makeElementExtractor $ fmap fst r
 
 
