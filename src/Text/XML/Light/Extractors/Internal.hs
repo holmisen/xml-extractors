@@ -4,7 +4,7 @@ module Text.XML.Light.Extractors.Internal
   ( Path
   , Err(..)
   , ExtractionErr(..)
-    
+
   -- * Element extraction
   , ElementExtractor
   , runElementExtractor
@@ -12,7 +12,7 @@ module Text.XML.Light.Extractors.Internal
   , attribAs
   , children
   , contents
-  
+
   -- * Contents extraction
   , ContentsExtractor
   , runContentsExtractor
@@ -21,7 +21,7 @@ module Text.XML.Light.Extractors.Internal
   , textAs
   , anyContent
   , eoc
-  ) 
+  )
 where
 
 import Control.Monad.Identity
@@ -37,7 +37,7 @@ import qualified Text.XML.Light.Extractors.Internal.Result as R
 --------------------------------------------------------------------------------
 
 elemName :: Element -> String
-elemName = qName . elName
+elemName = XML.qName . XML.elName
 
 --------------------------------------------------------------------------------
 
@@ -70,7 +70,7 @@ data Err = ErrExpectContent
            { expectedContent :: String
            , foundContent    :: XML.Content
            } -- ^ Some expected content is missing
-         | ErrExpectAttrib 
+         | ErrExpectAttrib
            { expectedAttrib :: String       -- ^ name of expected attribute
            , atElement      :: XML.Element  -- ^ element with missing attribute
            } -- ^ An expected attribute is missing
@@ -79,7 +79,7 @@ data Err = ErrExpectContent
            , foundValue     :: String       -- ^ the value found
            , atElement      :: XML.Element  -- ^ element with bad attribute
            } -- ^ An attribute value was bad
-         | ErrEnd 
+         | ErrEnd
            { foundContent   :: XML.Content
            } -- ^ Expected end of contents
          | ErrNull
@@ -149,7 +149,7 @@ children p = do
 --   case f s of
 --     Left e   -> throwError (ExtractionErr e path)
 --     Right a  -> return a
-  
+
 --------------------------------------------------------------------------------
 
 type Ctx = (Path, Int, [XML.Content])
@@ -157,7 +157,7 @@ type Ctx = (Path, Int, [XML.Content])
 type ContentsExtractor a = StateT Ctx (ResultT ExtractionErr Identity) a
 
 runContentsExtractor :: ContentsExtractor a -> [Content] -> Int -> Path -> Result ExtractionErr (a, Ctx)
-runContentsExtractor p contents i path = 
+runContentsExtractor p contents i path =
   runIdentity $ runResultT $ runStateT p (path, i, contents)
 
 
@@ -186,7 +186,7 @@ element name p = first expect go
 
 
 textAs :: (String -> Either Err a) -> ContentsExtractor a
-textAs f = first "text" go 
+textAs f = first "text" go
   where
     go (Text x) path =
       case f (cdData x) of
