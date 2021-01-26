@@ -1,3 +1,7 @@
+{-# LANGUAGE CPP #-}
+
+#define HAVE_MONAD_FAIL MIN_VERSION_base(4,9,0)
+
 module Text.XML.Light.Extractors.Internal.Result 
  ( Result(..)
  , toEither
@@ -14,7 +18,11 @@ module Text.XML.Light.Extractors.Internal.Result
  )
 where
 
+
 import Control.Applicative
+#if HAVE_MONAD_FAIL
+import qualified Control.Monad.Fail as Fail
+#endif
 import Control.Monad
 import Control.Monad.Trans.Error (Error, noMsg, strMsg)
 import Control.Monad.Trans.Class
@@ -97,7 +105,7 @@ instance (Functor m, Monad m) => Applicative (ResultT e m) where
 
 
 instance (Error e, Monad m) => MonadPlus (ResultT e m) where
-  mzero = ResultT $ return (Fail noMsg)
+  mzero = ResultT . return $ Fail noMsg
   
   mplus x y = ResultT $ do
                 l <- runResultT x
@@ -117,8 +125,12 @@ instance (Monad m, Error e) => Monad (ResultT e m) where
                 Fail  e -> return (Fail e)
                 Ok    a -> runResultT (k a)
 
-  fail msg = ResultT $ return $ Fail (strMsg msg)
-
+#if HAVE_MONAD_FAIL
+instance (Monad m, Error e) => Fail.MonadFail (ResultT e m) where
+  fail = throwError . strMsg
+#else
+  fail = throwError . strMsg
+#endif
 
 instance (Functor m, Monad m, Error e) => Alternative (ResultT e m) where
   empty = mzero
@@ -126,9 +138,7 @@ instance (Functor m, Monad m, Error e) => Alternative (ResultT e m) where
 
 
 instance (Error e) => MonadTrans (ResultT e) where
-  lift m = ResultT $ do
-             a <- m
-             return (Ok a)
+  lift m = ResultT $ Ok <$> m
 
 
 throwError :: (Error e, Monad m) => e -> ResultT e m a
